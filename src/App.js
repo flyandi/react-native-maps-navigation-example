@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
 import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
 import FlipView from 'react-native-flip-view';
-import MapViewNavigation, { TravelModeBox, TravelIcons, Geocoder, TravelModes, DirectionsListView, ManeuverView, DurationDistanceView } from 'react-native-maps-navigation';
+import MapViewNavigation, { NavigationModes, TravelModeBox, TravelIcons, Geocoder, TravelModes, DirectionsListView, ManeuverView, DurationDistanceView } from 'react-native-maps-navigation';
 import OptionGroup from 'react-native-optiongroup';
 import Styles, {AppColors, AppFonts} from './AppStyles';
 import MapStyles from './MapStyles';
@@ -14,7 +14,17 @@ import MapStyles from './MapStyles';
  * Settings
  * @type {string}
  */
-const GOOGLE_API_KEY = '';
+
+/**
+ * You need to fill in a Google API Key that enables the Direction API.
+ */
+const GOOGLE_API_KEY = 'GOOGLE_KEY';
+
+/**
+ * Set to true to use the controls methods instead of props
+ * @type {boolean}
+ */
+const USE_METHODS = false;
 
 
 /**
@@ -31,10 +41,12 @@ export default class App extends Component {
         super(props);
 
         this.state = {
+            origin: {latitude: 37.78825, longitude: -122.4324},
+            destination: '132 Wilmot St, San Francisco, CA 94115',
+            navigationMode: NavigationModes.IDLE,
+            travelMode: TravelModes.DRIVING,
             isFlipped: false,
             isNavigation: false,
-            address: '132 Wilmot St, San Francisco, CA 94115',
-            mode: TravelModes.DRIVING,
             route: false,
             step: false,
         }
@@ -42,40 +54,68 @@ export default class App extends Component {
 
     /**
      * goDisplayRoute
+     * @void
      */
     goDisplayRoute()
     {
         if(!this.validateRoute()) return;
 
-        this.refNavigation.displayRoute(
-            {latitude: 37.78825, longitude: -122.4324},
-            this.state.address,
-            {
-                mode: this.state.mode
-            }
-        ).then(route => {
-            console.log(route);
-        });
+        // There are two ways to display a route - either through the method
+        // displayRoute or by setting the props.
+        // The difference is that you get instant feedback when using methods vs props.
+
+        if(USE_METHODS) {
+
+            this.refNavigation.displayRoute(
+                this.state.origin,
+                this.state.destination,
+                {
+                    mode: this.state.travelMode
+                }
+            ).then(route => {
+                console.log(route);
+            });
+
+        } else {
+
+            this.setState({
+                navigationMode: NavigationModes.ROUTE,
+            });
+        }
     }
 
     /**
+     * goNavigateRoute
      * @void
      */
     goNavigateRoute()
     {
-        if(!this.validateRoute()) return;
+        if (!this.validateRoute()) return;
 
-        this.refNavigation.navigateRoute(
-            {latitude: 37.78825, longitude: -122.4324},
-            this.state.address,
-            {
-                mode: this.state.mode
-            }
-        ).then(() => {
+        // There are two ways to navigate a route - either through the method
+        // navigateRoute or by setting the props.
+        // The difference is that you get instant feedback when using methods vs props.
+
+        if (USE_METHODS) {
+
+            this.refNavigation.navigateRoute(
+                this.state.origin,
+                this.state.destination,
+                {
+                    mode: this.state.travelMode
+                }
+            ).then(route => {
+                this.setState({
+                    isNavigation: true
+                })
+            });
+
+        } else {
+
             this.setState({
-                isNavigation: true
-            })
-        });
+                navigationMode: NavigationModes.NAVIGATION,
+            });
+        }
     }
 
     /**
@@ -84,7 +124,7 @@ export default class App extends Component {
      */
     validateRoute()
     {
-        if(this.state.address.length >= 3) return true;
+        if(this.state.destination.length >= 3) return true;
 
         Alert.alert('Address required', 'You need to enter an address first');
 
@@ -104,7 +144,7 @@ export default class App extends Component {
                   <View style={Styles.appHeader}>
                       <Text style={Styles.inputLabel}>Where do you want to go?</Text>
                       <View style={Styles.inputContainer}>
-                          <TextInput style={Styles.input} onChangeText={address => this.setState({address})} value={this.state.address}/>
+                          <TextInput style={Styles.input} onChangeText={destination => this.setState({destination})} value={this.state.destination}/>
 
                           <TouchableOpacity style={Styles.button} onPress={() => this.goDisplayRoute()}>
                               <Text style={Styles.buttonText}>{'\ue961'}</Text>
@@ -116,7 +156,7 @@ export default class App extends Component {
 
                       </View>
                       <TravelModeBox
-                          onChange={mode => this.setState({mode})}
+                          onChange={travelMode => this.setState({travelMode})}
                           inverseTextColor={AppColors.background}
                       />
                   </View>
@@ -145,6 +185,10 @@ export default class App extends Component {
                               }}
                           >
                               <MapViewNavigation
+                                  origin={this.state.origin}
+                                  destination={this.state.destination}
+                                  navigationMode={this.state.navigationMode}
+                                  travelMode={this.state.travelMode}
                                   ref={ref => this.refNavigation = ref}
                                   map={() => this.refMap}
                                   apiKey={GOOGLE_API_KEY}
@@ -164,6 +208,7 @@ export default class App extends Component {
                             fontFamily={AppFonts.light}
                             fontFamilyBold={AppFonts.bold}
                             route={this.state.route}
+                            displayTravelMode={true}
                         />
                       </View>
                   }

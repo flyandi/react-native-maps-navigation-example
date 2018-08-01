@@ -4242,10 +4242,9 @@ react-native-flip-view@mdcollab/react-native-flip-view:
   resolved "https://codeload.github.com/mdcollab/react-native-flip-view/tar.gz/ed7f252b2d8b21131258def49e23189b85853b93"
 
 react-native-maps-navigation@../react-native-maps-navigation:
-  version "0.0.13"
+  version "0.0.14"
   dependencies:
     geolib "^2.0.24"
-    lodash "^4.17.10"
     prop-types "^15.6.2"
     react-native-optiongroup "^0.0.7"
 

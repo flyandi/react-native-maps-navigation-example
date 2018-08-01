@@ -11,7 +11,7 @@
     "react-native": "0.55.4",
     "react-native-flip-view": "mdcollab/react-native-flip-view",
     "react-native-maps": "^0.21.0",
-    "react-native-maps-navigation": "../react-native-maps-navigation",
+    "react-native-maps-navigation": "^0.0.14",
     "react-native-optiongroup": "^0.0.7"
   },
   "devDependencies": {
